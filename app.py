@@ -90,6 +90,9 @@ def ans():
     """
     # [1:'ประวัติ', 2:'ที่อยู่', 3:'ติดต่อ', 4:'บุคลากร', 5:'ข่าว', 6:'หลักสูตร',
     # 6:'เกี่ยวกับการเรียน', 7:'เข้าศึกษา', 8:'อาชีพ', 9:'ไม่เกี่ยวข้อง', 10:'ทักทาย']
+
+    if (not request):
+        return 'no request.'
     question = request.json['Q'].replace(' ', '')
     question_c = ''
     words_set = {''}
@@ -381,5 +384,6 @@ def ans():
         except Exception as e:
             return f"An Error Occured: {e}"
 
+
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT')))
