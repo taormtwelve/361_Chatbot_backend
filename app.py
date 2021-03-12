@@ -1,14 +1,12 @@
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, request
 from firebase_admin import credentials, firestore, initialize_app
 from flask_cors import CORS
-from deepcut import tokenize
 import numpy as np
 from keras.models import load_model
 from pythainlp import word_vector, word_tokenize
 from pythainlp.tag.named_entity import ThaiNameTagger
-from pythainlp.util import isthai, normalize
 import random, csv,os
-from pythainlp.tag import pos_tag, pos_tag_sents
+from pythainlp.tag import pos_tag
 from datetime import date
 from fuzzywuzzy import fuzz
 
