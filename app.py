@@ -72,19 +72,6 @@ def words2vec(question, max_sentence_length, word_vector_length, wvmodel):
 
 
 # ___________________________________________ API ___________________________________________
-@app.route('/save', methods=['POST'])
-def save():
-    try:
-        QnA_ref.document().set(request.json)
-        if int(request.json['tag']) < len(f_questions):
-            data = frequencyQ_ref.document(request.json['tag']).get()
-            count = data.to_dict()['count'] + 1
-            frequencyQ_ref.document(request.json['tag']).update({'count':count}.json)
-        return jsonify({"success": True}), 200
-    except Exception as e:
-        return f"An Error Occured: {e}"
-
-
 @app.route('/get', methods=['GET'])
 def get():
     # data = frequencyQ_ref.document(str(i)).get()
@@ -100,6 +87,17 @@ def get():
         f_count[x] = -1
     return jsonify({'questions': qs})
 
+@app.route('/save', methods=['POST'])
+def save():
+    try:
+        QnA_ref.document().set(request.json)
+        if int(request.json['tag']) < len(f_questions):
+            data = frequencyQ_ref.document(request.json['tag']).get()
+            count = data.to_dict()['count'] + 1
+            frequencyQ_ref.document(request.json['tag']).update({'count':count}.json)
+        return jsonify({"success": True}), 200
+    except Exception as e:
+        return f"An Error Occured: {e}"
 
 @app.route('/', methods=['POST'])
 def ans():
