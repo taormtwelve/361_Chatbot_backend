@@ -73,7 +73,7 @@ def words2vec(question, max_sentence_length, word_vector_length, wvmodel):
 
 # ___________________________________________ API ___________________________________________
 @app.route('/get', methods=['GET'])
-def get():
+def read():
     # data = frequencyQ_ref.document(str(i)).get()
     qs = []
     f_count = []
