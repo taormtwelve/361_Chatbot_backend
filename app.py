@@ -28,7 +28,12 @@ model = load_model('./models/chatbot_best_val_2.h5')
 category_0 = ['ความเป็นมาประวัติก่อ', 'อายุปีคอมพิวเตอร์คอม', 'อายุปีสารสนเทศเครือข่าย', 'รุ่นคอมพิวเตอร์คอม', 'รุ่นสารสนเทศเครือข่าย']
 category_2 = ['ภาควิชาภาคเมเจอร์', 'อาจารย์ครู']
 category_3 = ['หัวหน้า', 'รองหัวหน้า', 'คนท่าน', 'อาจารย์ครู']
-category_5 = ['บัณฑิตปริญญาตรี', 'มหาบัณฑิตปริญญาโท', 'ดุษฎีบัณฑิตปริญญาเอก','ปีระยะเวลา','ค่าเทอมค่าธรรมเนียม']
+category_5 = ['บัณฑิตปริญญาตรี', 'มหาบัณฑิตปริญญาโท', 'ดุษฎีบัณฑิตปริญญาเอก', 'ปีระยะเวลา', 'ค่าเทอมค่าธรรมเนียม']
+f_questions = ['ความเป็นมาของภาควิชา', 'สถานที่ตั้งของภาควิชา', 'ช่องทางการติดต่อ', 'อาจารย์', 'ข่าวที่น่าสนใจที่เกี่ยวกับภาควิชา',
+               'หลักสูตรการศึกษา', 'เรียนเกี่ยวกับอะไรบ้าง', 'เกณฑ์การรับนักศึกษา', 'จบแล้วไปทำงานอะไรได้บ้าง']
+delw_23 = ['อาจารย์','ครู','ติดต่อ', 'เบอร์โทร', 'เบอร์', 'เว็บไซต์', 'เมลล์', 'อีเมลล์', 'และ', 'เว็บไซต์']
+# n_class = 11
+f_count = [0]*len(f_questions)
 # history = np.load('./models/model_history_2_0.9375.npy', allow_pickle='TRUE').item()
 word_vector_length = 300
 max_sentence_length = 20
@@ -40,7 +45,7 @@ cat_token_3 = [pos_tag(word_tokenize(sent)) for sent in category_3]
 cat_token_5 = [pos_tag(word_tokenize(sent)) for sent in category_5]
 cat_token_7 = [pos_tag(word_tokenize(sent)) for sent in category_5[:3]]
 
-file = open('corpus/common_words.csv', 'r', encoding='utf-8-sig')
+file = open('corpus/common_words.csv', 'r', encoding='utf-8')
 data = list(csv.reader(file))
 common_words = [d[0] for d in data]
 trans_words = [d[1] for d in data]
@@ -72,13 +77,32 @@ def save():
     try:
         json_data = jsonify({
             'Q': request.json['Q'],
-            'A': request.json['A']
+            'A': request.json['A'],
+            'tag': request.json['tag']
         })
         print(json_data)
         QnA_ref.document().set(request.json)
         return jsonify({"success": True}), 200
     except Exception as e:
         return f"An Error Occured: {e}"
+
+
+@app.route('/get_fqs', methods=['GET'])
+def get_fqs():
+    doc = QnA_ref.get()
+    qs = []
+    for item in doc:
+        try:
+            tag = int(item.to_dict()['tag'])
+            if tag < len(f_questions):
+                f_count[tag] += 1
+        except:
+            pass
+    for _ in range(3):
+        x = np.array(f_count).argmax()
+        qs.append(f_questions[x])
+        f_count[x] = -1
+    return jsonify({'questions': qs})
 
 
 @app.route('/', methods=['POST'])
@@ -183,12 +207,15 @@ def ans():
                       f'facebook: {contect.to_dict()["facebook"]}'
             }), 200
         else:
-            question_x = word_tokenize(question_c.replace('อาจารย์', '').replace('ครู', '').replace('ติดต่อ', ''))
+            for w in delw_23:
+                question_c = question_c.replace(w, '')
+            question_x = word_tokenize(question_c)
             try:
-                name = data[np.array([[max([fuzz.ratio(w, d[0]) for w in question_x]) for d in data[str_row_instructor:]],
-                                    [max([fuzz.ratio(w, d[1]) for w in question_x]) for d in data[str_row_instructor:]],
-                                    [max([fuzz.ratio(w, d[2]) for w in question_x]) for d in data[str_row_instructor:]]]
-                                    ).max(axis=0).argmax() + str_row_instructor]
+                if question_x == []:
+                     raise Exception('')
+                name = data[np.array([[sum([fuzz.ratio(w, word_tokenize(d[1])) for w in question_x]) for d in data[str_row_instructor:]],
+                                      [sum([fuzz.ratio(w, word_tokenize(d[0])) for w in question_x]) for d in data[str_row_instructor:]]])
+                                      .max(axis=0).argmax() + str_row_instructor]
 
                 return jsonify({
                     'tag': str(n),
@@ -235,11 +262,15 @@ def ans():
                 'A2': {'key': f'ข้อมูลการติดต่ออาจารย์', 'value': f'{contect.to_dict()["instructor_all"]}'}
             }), 200
         else:
-            question_x = word_tokenize(question_c.replace('อาจารย์', '').replace('ครู', '').replace('ติดต่อ', ''))
+            for w in delw_23:
+                question_c = question_c.replace(w, '')
+            question_x = word_tokenize(question_c)
             try:
-                name = data[np.array([[max([fuzz.ratio(w, d[0]) for w in question_x]) for d in data[str_row_instructor:]],
-                                      [max([fuzz.ratio(w, d[1]) for w in question_x]) for d in data[str_row_instructor:]],
-                                      [max([fuzz.ratio(w, d[2]) for w in question_x]) for d in data[str_row_instructor:]]]
+                if question_x == []:
+                     raise Exception('')
+                name = data[np.array([[sum([fuzz.ratio(w, d[0]) for w in question_x]) for d in data[str_row_instructor:]],
+                                      [sum([fuzz.ratio(w, d[1]) for w in question_x]) for d in data[str_row_instructor:]],
+                                      [sum([fuzz.ratio(w, d[2]) for w in question_x]) for d in data[str_row_instructor:]]]
                                      ).max(axis=0).argmax() + str_row_instructor]
 
                 return jsonify({
