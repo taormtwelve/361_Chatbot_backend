@@ -19,6 +19,7 @@ initialize_app(cred)
 db = firestore.client()
 chatbot_ref = db.collection('chatbot')
 QnA_ref = db.collection('QnA')
+frequencyQ_ref = db.collection('frequencyQ')
 app = Flask(__name__)
 cors = CORS(app)
 
@@ -33,7 +34,6 @@ f_questions = ['ความเป็นมาของภาควิชา', '
                'หลักสูตรการศึกษา', 'เรียนเกี่ยวกับอะไรบ้าง', 'เกณฑ์การรับนักศึกษา', 'จบแล้วไปทำงานอะไรได้บ้าง']
 delw_23 = ['อาจารย์','ครู','ติดต่อ', 'เบอร์โทร', 'เบอร์', 'เว็บไซต์', 'เมลล์', 'อีเมลล์', 'และ', 'เว็บไซต์']
 # n_class = 11
-f_count = [0]*len(f_questions)
 # history = np.load('./models/model_history_2_0.9375.npy', allow_pickle='TRUE').item()
 word_vector_length = 300
 max_sentence_length = 20
@@ -75,29 +75,25 @@ def words2vec(question, max_sentence_length, word_vector_length, wvmodel):
 @app.route('/save', methods=['POST'])
 def save():
     try:
-        json_data = jsonify({
-            'Q': request.json['Q'],
-            'A': request.json['A'],
-            'tag': request.json['tag']
-        })
-        print(json_data)
         QnA_ref.document().set(request.json)
+        if int(request.json['tag']) < len(f_questions):
+            data = frequencyQ_ref.document(request.json['tag']).get()
+            count = data.to_dict()['count'] + 1
+            frequencyQ_ref.document(request.json['tag']).update({'count':count}.json)
         return jsonify({"success": True}), 200
     except Exception as e:
         return f"An Error Occured: {e}"
 
 
-@app.route('/get_fqs', methods=['GET'])
-def get_fqs():
-    doc = QnA_ref.get()
+@app.route('/get', methods=['GET'])
+def get():
+    # data = frequencyQ_ref.document(str(i)).get()
     qs = []
-    for item in doc:
-        try:
-            tag = int(item.to_dict()['tag'])
-            if tag < len(f_questions):
-                f_count[tag] += 1
-        except:
-            pass
+    f_count = []
+    for i in range(len(f_questions)):
+        if i < len(f_questions):
+            data = frequencyQ_ref.document(str(i)).get()
+            f_count.append(data.to_dict()['count'])
     for _ in range(3):
         x = np.array(f_count).argmax()
         qs.append(f_questions[x])
