@@ -23,13 +23,13 @@ cors = CORS(app)
 
 # _____________________________________ Machine Learning _____________________________________
 
-model = load_model('./models/chatbot_best_val_35.h5')
+model = load_model('./models/chatbot_best_val_2.h5')
 category_0 = ['ความเป็นมาประวัติก่อ', 'อายุปีคอมพิวเตอร์คอม', 'อายุปีสารสนเทศเครือข่าย', 'รุ่นคอมพิวเตอร์คอม', 'รุ่นสารสนเทศเครือข่าย']
 category_2 = ['ภาควิชาภาคเมเจอร์', 'อาจารย์ครู']
 category_3 = ['หัวหน้า', 'รองหัวหน้า', 'คนท่าน', 'อาจารย์ครู']
 category_5 = ['บัณฑิตปริญญาตรี', 'มหาบัณฑิตปริญญาโท', 'ดุษฎีบัณฑิตปริญญาเอก', 'ปีระยะเวลา', 'ค่าเทอมค่าธรรมเนียม']
 f_questions = ['ความเป็นมาของภาควิชา', 'สถานที่ตั้งของภาควิชา', 'ช่องทางการติดต่อ', 'อาจารย์', 'ข่าวที่น่าสนใจที่เกี่ยวกับภาควิชา',
-               'หลักสูตรการศึกษา', 'เรียนเกี่ยวกับอะไรบ้าง', 'เกณฑ์การรับนักศึกษา', 'จบแล้วไปทำงานอะไรได้บ้าง']
+               'หลักสูตรการศึกษา', 'เรียนเกี่ยวกับอะไรบ้าง', 'เกณฑ์การรับนักศึกษา', 'จบแล้วไปทำงานอะไรได้บ้าง', 'ทุนที่เกี่ยวข้องกับการศึกษา']
 delw_23 = ['อาจารย์','ครู','ติดต่อ', 'เบอร์โทร', 'เบอร์', 'เว็บไซต์', 'อีเมลล์', 'เมลล์', 'และ', 'เว็บไซต์', 'หรือ']
 # n_class = 12
 # history = np.load('./models/model_history_2_0.9375.npy', allow_pickle='TRUE').item()
@@ -400,7 +400,11 @@ def ans():
             'A2': {'key': f'เพิ่มเติม', 'value': f'{job.to_dict()["url"]}'}
         }), 200
     elif n == 9:
-        return jsonify({'A1': 'ฉันตอบไม่ได้'}), 200
+        scholarships = chatbot_ref.document('scholarships').get()
+        return jsonify({
+            'A1': scholarships.to_dict()["details"],
+            'A2': {'key': f'เพิ่มเติม', 'value': f'{scholarships.to_dict()["url"]}'}
+        }), 200
     elif n == 10:
         try:
             greeting = ['สวัสดี', 'สวัสดีจ้า', 'สวัสดีครับ']
@@ -419,11 +423,7 @@ def ans():
         except Exception as e:
             return f"An Error Occured: {e}"
     else:
-        scholarships = chatbot_ref.document('scholarships').get()
-        return jsonify({
-            'A1': scholarships.to_dict()["details"],
-            'A2': {'key': f'เพิ่มเติม', 'value': f'{scholarships.to_dict()["url"]}'}
-        }), 200
+        return jsonify({'A1': 'ฉันตอบไม่ได้'}), 200
 
 
 if __name__ == '__main__':
