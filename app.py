@@ -91,8 +91,9 @@ def save():
         QnA_ref.document().set(request.json)
         if int(request.json['tag']) < len(f_questions):
             data = frequencyQ_ref.document(request.json['tag']).get()
-            count = data.to_dict()['count'] + 1
-            frequencyQ_ref.document(request.json['tag']).update({'count':count}.json)
+            count = jsonify({'count': data.to_dict()['count'] + 1})
+            print(f'count:{count}')
+            frequencyQ_ref.document(request.json['tag']).update(count.json)
         return jsonify({"success": True}), 200
     except Exception as e:
         return f"An Error Occured: {e}"
