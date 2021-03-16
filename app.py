@@ -23,15 +23,15 @@ cors = CORS(app)
 
 # _____________________________________ Machine Learning _____________________________________
 
-model = load_model('./models/chatbot_best_val_2.h5')
+model = load_model('./models/chatbot_best_val_35.h5')
 category_0 = ['ความเป็นมาประวัติก่อ', 'อายุปีคอมพิวเตอร์คอม', 'อายุปีสารสนเทศเครือข่าย', 'รุ่นคอมพิวเตอร์คอม', 'รุ่นสารสนเทศเครือข่าย']
 category_2 = ['ภาควิชาภาคเมเจอร์', 'อาจารย์ครู']
 category_3 = ['หัวหน้า', 'รองหัวหน้า', 'คนท่าน', 'อาจารย์ครู']
 category_5 = ['บัณฑิตปริญญาตรี', 'มหาบัณฑิตปริญญาโท', 'ดุษฎีบัณฑิตปริญญาเอก', 'ปีระยะเวลา', 'ค่าเทอมค่าธรรมเนียม']
 f_questions = ['ความเป็นมาของภาควิชา', 'สถานที่ตั้งของภาควิชา', 'ช่องทางการติดต่อ', 'อาจารย์', 'ข่าวที่น่าสนใจที่เกี่ยวกับภาควิชา',
                'หลักสูตรการศึกษา', 'เรียนเกี่ยวกับอะไรบ้าง', 'เกณฑ์การรับนักศึกษา', 'จบแล้วไปทำงานอะไรได้บ้าง']
-delw_23 = ['อาจารย์','ครู','ติดต่อ', 'เบอร์โทร', 'เบอร์', 'เว็บไซต์', 'เมลล์', 'อีเมลล์', 'และ', 'เว็บไซต์']
-# n_class = 11
+delw_23 = ['อาจารย์','ครู','ติดต่อ', 'เบอร์โทร', 'เบอร์', 'เว็บไซต์', 'อีเมลล์', 'เมลล์', 'และ', 'เว็บไซต์', 'หรือ']
+# n_class = 12
 # history = np.load('./models/model_history_2_0.9375.npy', allow_pickle='TRUE').item()
 word_vector_length = 300
 max_sentence_length = 20
@@ -202,6 +202,7 @@ def ans():
             for w in delw_23:
                 question_c = question_c.replace(w, '')
             question_x = word_tokenize(question_c)
+            # print(question_x)
             try:
                 if question_x == []:
                      raise Exception('')
@@ -400,12 +401,29 @@ def ans():
         }), 200
     elif n == 9:
         return jsonify({'A1': 'ฉันตอบไม่ได้'}), 200
-    else:
+    elif n == 10:
         try:
             greeting = ['สวัสดี', 'สวัสดีจ้า', 'สวัสดีครับ']
             return jsonify({'tag': str(n), 'A1': greeting[random.randint(0, len(greeting) - 1)], 'A2': ' มีอะไรสอบถามไหมครับ'}), 200
         except Exception as e:
             return f"An Error Occured: {e}"
+    elif n == 11:
+        try:
+            thanking = ['ขอบคุณมาก', 'ขอบคุณครับ', 'แต๊งกิ้ว']
+            see_you = ['ครับ', 'แล้วพบกันใหม่จ้า']
+            end_words = ['หมด','ไม่']
+            for eword in end_words:
+                if eword in question_c:
+                    return jsonify({'tag': str(n), 'A1': see_you[random.randint(0, len(see_you) - 1)]}), 200 
+            return jsonify({'tag': str(n), 'A1': thanking[random.randint(0, len(thanking) - 1)]}), 200
+        except Exception as e:
+            return f"An Error Occured: {e}"
+    else:
+        scholarships = chatbot_ref.document('scholarships').get()
+        return jsonify({
+            'A1': scholarships.to_dict()["details"],
+            'A2': {'key': f'เพิ่มเติม', 'value': f'{scholarships.to_dict()["url"]}'}
+        }), 200
 
 
 if __name__ == '__main__':
