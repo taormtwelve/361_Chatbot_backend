@@ -23,7 +23,7 @@ cors = CORS(app)
 
 # _____________________________________ Machine Learning _____________________________________
 
-model = load_model('./models/chatbot_best_val_2.h5')
+model = load_model('./models/chatbot_best_val_22.h5')
 category_0 = ['ความเป็นมาประวัติก่อ', 'อายุปีคอมพิวเตอร์คอม', 'อายุปีสารสนเทศเครือข่าย', 'รุ่นคอมพิวเตอร์คอม', 'รุ่นสารสนเทศเครือข่าย']
 category_2 = ['ภาควิชาภาคเมเจอร์', 'อาจารย์ครู']
 category_3 = ['หัวหน้า', 'รองหัวหน้า', 'คนท่าน', 'อาจารย์ครู']
@@ -192,11 +192,11 @@ def ans():
             return jsonify({
                 'tag': str(n),
                 'A1': f'สามารถติดต่อภาควิชาได้ดังนี้',
-                'A2': f'อีเมลล์: {contect.to_dict()["email"]}\n'
-                      f'โทรศัพท์: {contect.to_dict()["tel"]}\n'
-                      f'แฟกซ์: {contect.to_dict()["fax"]}\n'
-                      f'เว็บไซต์: {contect.to_dict()["website"]}\n'
-                      f'facebook: {contect.to_dict()["facebook"]}'
+                'A2': f'อีเมลล์: {contect.to_dict()["email"]}',
+                'A3': f'โทรศัพท์: {contect.to_dict()["tel"]}',
+                'A4': f'แฟกซ์: {contect.to_dict()["fax"]}',
+                'A5': f'เว็บไซต์: {contect.to_dict()["website"]}',
+                'A6': f'facebook: {contect.to_dict()["facebook"]}'
             }), 200
         else:
             for w in delw_23:
