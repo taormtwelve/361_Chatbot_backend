@@ -23,15 +23,15 @@ cors = CORS(app)
 
 # _____________________________________ Machine Learning _____________________________________
 
-model = load_model('./models/chatbot_best_val_22.h5')
+model = load_model('./models/chatbot_best_val_1.h5')
 category_0 = ['ความเป็นมาประวัติก่อ', 'อายุปีคอมพิวเตอร์คอม', 'อายุปีสารสนเทศเครือข่าย', 'รุ่นคอมพิวเตอร์คอม', 'รุ่นสารสนเทศเครือข่าย']
 category_2 = ['ภาควิชาภาคเมเจอร์', 'อาจารย์ครู']
 category_3 = ['หัวหน้า', 'รองหัวหน้า', 'คนท่าน', 'อาจารย์ครู']
 category_5 = ['บัณฑิตปริญญาตรี', 'มหาบัณฑิตปริญญาโท', 'ดุษฎีบัณฑิตปริญญาเอก', 'ปีระยะเวลา', 'ค่าเทอมค่าธรรมเนียม']
 f_questions = ['ความเป็นมาของภาควิชา', 'สถานที่ตั้งของภาควิชา', 'ช่องทางการติดต่อ', 'อาจารย์', 'ข่าวที่น่าสนใจที่เกี่ยวกับภาควิชา',
                'หลักสูตรการศึกษา', 'เรียนเกี่ยวกับอะไรบ้าง', 'เกณฑ์การรับนักศึกษา', 'จบแล้วไปทำงานอะไรได้บ้าง', 'ทุนที่เกี่ยวข้องกับการศึกษา']
-delw_23 = ['อาจารย์','ครู','ติดต่อ', 'เบอร์โทร', 'เบอร์', 'เว็บไซต์', 'อีเมลล์', 'เมลล์', 'และ', 'เว็บไซต์', 'หรือ']
-# n_class = 12
+delw_23 = ['อาจารย์','ครู','การติดต่อ','ติดต่อ', 'เบอร์โทร', 'เบอร์', 'เว็บไซต์', 'อีเมลล์', 'เมลล์', 'และ', 'เว็บไซต์', 'หรือ','ข้อมูล','เกี่ยวข้อง']
+n_class = 13
 # history = np.load('./models/model_history_2_0.9375.npy', allow_pickle='TRUE').item()
 word_vector_length = 300
 max_sentence_length = 20
@@ -45,7 +45,7 @@ cat_token_7 = [pos_tag(word_tokenize(sent)) for sent in category_5[:3]]
 
 file = open('corpus/common_words.csv', 'r', encoding='utf-8')
 data = list(csv.reader(file))
-common_words = [d[0] for d in data]
+common_words = [d[0].replace('\ufeff','') for d in data]
 trans_words = [d[1] for d in data]
 str_row_instructor = np.array([len(d) for d in data]).argmax()
 
@@ -92,7 +92,6 @@ def save():
         if int(request.json['tag']) < len(f_questions):
             data = frequencyQ_ref.document(request.json['tag']).get()
             count = jsonify({'count': data.to_dict()['count'] + 1})
-            print(f'count:{count}')
             frequencyQ_ref.document(request.json['tag']).update(count.json)
         return jsonify({"success": True}), 200
     except Exception as e:
@@ -113,18 +112,18 @@ def ans():
     question = request.json['Q'].replace(' ', '')
     question_c = ''
     words_set = {''}
+    print(common_words[:str_row_instructor])
     for word in word_tokenize(question):
         if word.lower() in common_words[:str_row_instructor]:
             word = trans_words[common_words.index(word.lower())]
+            # print('---------------------------------------------------------------')
         if word not in words_set:
             question_c += word
             words_set.add(word)
-    # print(question_c)
-    # normalize(question_c)
     word_vectors, words, pass_count = words2vec(question_c, max_sentence_length, word_vector_length, wvmodel)
     n = model.predict(word_vectors).argmax(axis=1)[0]
     if n != 2 and n != 3 and 2*pass_count >= len(words):
-        n = 9
+        n = n_class
     print('class :', n, words)
     if n == 0:
         score = [0] * len(category_0)
@@ -203,7 +202,6 @@ def ans():
             for w in delw_23:
                 question_c = question_c.replace(w, '')
             question_x = word_tokenize(question_c)
-            # print(question_x)
             try:
                 if question_x == []:
                      raise Exception('')
@@ -235,7 +233,6 @@ def ans():
                             score[i] += wvmodel.similarity(w, c)
                         except:
                             pass
-        # print(score)
         c = np.array(score).argmax()
         if c < 2:
             try:
@@ -293,7 +290,6 @@ def ans():
                             score[i] += wvmodel.similarity(w, c)
                         except:
                             pass
-        print(score)
         c = np.array(score).argmax()
         if c == 0:
             cpe_curriculum = chatbot_ref.document('cpe-curriculum').get()
