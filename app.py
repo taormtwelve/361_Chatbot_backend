@@ -23,14 +23,14 @@ cors = CORS(app)
 
 # _____________________________________ Machine Learning _____________________________________
 
-model = load_model('./models/chatbot_best_val_1.h5')
+model = load_model('./models/chatbot_best_val_15.h5')
 category_0 = ['ความเป็นมาประวัติก่อ', 'อายุปีคอมพิวเตอร์คอม', 'อายุปีสารสนเทศเครือข่าย', 'รุ่นคอมพิวเตอร์คอม', 'รุ่นสารสนเทศเครือข่าย']
 category_2 = ['ภาควิชาภาคเมเจอร์', 'อาจารย์ครู']
 category_3 = ['หัวหน้า', 'รองหัวหน้า', 'คนท่าน', 'อาจารย์ครู']
 category_5 = ['บัณฑิตปริญญาตรี', 'มหาบัณฑิตปริญญาโท', 'ดุษฎีบัณฑิตปริญญาเอก', 'ปีระยะเวลา', 'ค่าเทอมค่าธรรมเนียม']
 f_questions = ['ความเป็นมาของภาควิชา', 'สถานที่ตั้งของภาควิชา', 'ช่องทางการติดต่อ', 'อาจารย์', 'ข่าวที่น่าสนใจที่เกี่ยวกับภาควิชา',
                'หลักสูตรการศึกษา', 'เรียนเกี่ยวกับอะไรบ้าง', 'เกณฑ์การรับนักศึกษา', 'จบแล้วไปทำงานอะไรได้บ้าง', 'ทุนที่เกี่ยวข้องกับการศึกษา']
-delw_23 = ['อาจารย์','ครู','การติดต่อ','ติดต่อ', 'เบอร์โทร', 'เบอร์', 'เว็บไซต์', 'อีเมลล์', 'เมลล์', 'และ', 'เว็บไซต์', 'หรือ','ข้อมูล','เกี่ยวข้อง']
+delw_23 = ['คณาจารย์','ผู้สอน','อาจารย์','ครู','การติดต่อ','ติดต่อ', 'เบอร์โทร', 'เบอร์', 'เว็บไซต์', 'อีเมลล์', 'เมลล์', 'และ', 'เว็บไซต์', 'หรือ','ข้อมูล','เกี่ยวข้อง']
 n_class = 13
 # history = np.load('./models/model_history_2_0.9375.npy', allow_pickle='TRUE').item()
 word_vector_length = 300
@@ -116,7 +116,6 @@ def ans():
     for word in word_tokenize(question):
         if word.lower() in common_words[:str_row_instructor]:
             word = trans_words[common_words.index(word.lower())]
-            # print('---------------------------------------------------------------')
         if word not in words_set:
             question_c += word
             words_set.add(word)
@@ -174,7 +173,8 @@ def ans():
         return jsonify({
             'tag': str(n),
             'A1': address.to_dict()['name'],
-            'A2': address.to_dict()['address']
+            'A2': address.to_dict()['address'],
+            'A3': {'key': f'เปิดใน Google Map', 'value': f'{address.to_dict()["url"]}'}
         }), 200
     elif n == 2:
         contect = chatbot_ref.document('contect').get()
